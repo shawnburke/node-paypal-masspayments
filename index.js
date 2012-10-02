@@ -17,12 +17,30 @@ function MassPay(options) {
     , currencyCode: 'USD'
   };
   
+  if (options.base_url) {
+      this.base_url = options.base_url;
+  }
   this.environment = (process.env.PAYPAL_ENV === 'production') ? 'live' : 'sandbox';
 };
 
 MassPay.prototype.pay = function pay(paymentBatch, callback) {
-  var vars = _.extend(_.clone(this.vars), paymentBatch.params)
-    , base_url = (this.environment === 'live') ? 'https://api-3t.paypal.com/nvp' : 'https://api-3t.' + this.environment + '.paypal.com/nvp';
+
+ var host = 'paypal.com';
+
+  if (!this.base_url) {
+    if (this.environment != 'live') {
+      host = this.environment + '.' + host;
+    }
+    host = 'https://api-3t.' + host;
+  }
+  else {
+    host = this.base_url;
+  }
+
+  var base_url = host + '/nvp';
+
+  var vars = _.extend(_.clone(this.vars), paymentBatch.params);
+  
   request.post({
     headers: { 
       'content-type': 'application/x-www-form-urlencoded' 
